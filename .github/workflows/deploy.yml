@@ -25,7 +25,7 @@ jobs:
       - name: Install Dependencies
         run: |
           # Install everything in one go to ensure compatibility
-          pip install google-genai scrapetube youtube-transcript-api ipykernel PyYAML pandas nbformat
+          pip install google-genai scrapetube youtube-transcript-api ipykernel PyYAML pandas nbformat nbclient
           # Force register the kernel so Quarto can see the libraries
           python -m ipykernel install --user --name python3
 

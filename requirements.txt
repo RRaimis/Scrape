@@ -5,3 +5,4 @@ ipykernel
 PyYAML
 pandas
 nbformat
+nbclient
