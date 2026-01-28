@@ -1,0 +1,45 @@
+name: Daily Financial Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs every day at midnight
+  push:
+    branches: [ main ] # Runs every time you push code
+  workflow_dispatch: # Allows you to click 'Run' manually
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Essential for the bot to save the new JSON data
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install google-genai scrapetube youtube-transcript-api ipykernel
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Run Scraper
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} # This injects your secret!
+        run: python 2_notebooks/YTscrape.py # REPLACE with your actual scraper filename
+
+      - name: Render Quarto to HTML
+        run: quarto render index.qmd
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add 3_outputs/financial_summaries.json index.html
+          git commit -m "Automated update: $(date)" || echo "No changes to commit"
+          git push

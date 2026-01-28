@@ -12,9 +12,6 @@ API_KEY = os.environ.get("GEMINI_API_KEY")
 if not API_KEY:
     raise ValueError("GEMINI_API_KEY not found. Ensure it is set in GitHub Secrets, Rayne.")
 
-
-
-
 CHANNEL_IDS = ["UCw9Yjk4De_l21-sxLUvCbTw", "UCRvqjQPSeaWn-uEx-w0XOIg", "UCkrwgzhIBKccuDsi_SvZtnQ"]
 
 CHANNEL_MAP = {
