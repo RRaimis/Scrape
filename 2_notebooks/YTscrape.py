@@ -20,7 +20,11 @@ CHANNEL_MAP = {
     "UCkrwgzhIBKccuDsi_SvZtnQ": "Forward Guidance"
 }
 
-OUTPUT_FOLDER = "3_outputs"
+# --- DYNAMIC PATHING FOR ACTIONS COMPATIBILITY ---
+# Get the absolute path of the directory where this script resides (2_notebooks)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Navigate up one level to root, then into 3_outputs
+OUTPUT_FOLDER = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "3_outputs"))
 DB_FILE = os.path.join(OUTPUT_FOLDER, "financial_summaries.json")
 
 FINANCIAL_PROMPT = """
@@ -30,9 +34,7 @@ FINANCIAL_PROMPT = """
 
 **Objective:** Analyze the provided transcript to identify every distinct asset, asset class or macroeconomic element discussed. For each asset, asset class or macroeconomic element determine the speaker's sentiment, the core investment thesis, potential risks, and any specific price targets or time horizons mentioned.
 
-**Instructions:** 
-
-**1. Filter Noise:** Ignore all requests to "like and subscribe," sponsor reads, and off-topic personal anecdotes. Focus only on financial assertions and data.
+**Instructions:** **1. Filter Noise:** Ignore all requests to "like and subscribe," sponsor reads, and off-topic personal anecdotes. Focus only on financial assertions and data.
 
 **2. Identify Assets:** List every asset mentioned (Stocks, Crypto, Commodities, Forex). If a ticker symbol is available, use it (e.g., AAPL, BTC, GLD).
 
@@ -60,23 +62,24 @@ Important RULES:
 """
 
 client = genai.Client(api_key=API_KEY)
-ytt_api = YouTubeTranscriptApi()
 
 def get_video_transcript(video_id):
     try:
-        # Session-based fetch as per manual
-        fetched = ytt_api.fetch(video_id)
-        return " ".join([snippet['text'] for snippet in fetched.to_raw_data()])
-    except Exception:
+        # standard fetch method for better compatibility across environments
+        srt = YouTubeTranscriptApi.get_transcript(video_id)
+        return " ".join([snippet['text'] for snippet in srt])
+    except Exception as e:
+        print(f"Transcript error for {video_id}: {e}")
         return None
 
 def main_run_once():
-    # Ensure the output directory exists
+    # Verify paths in logs for debugging
+    print(f"Target Database File: {DB_FILE}")
+
     if not os.path.exists(OUTPUT_FOLDER):
         os.makedirs(OUTPUT_FOLDER)
         print(f"Created folder: {OUTPUT_FOLDER}")
 
-    # 1. Load historical database from the new path
     try:
         with open(DB_FILE, "r") as f:
             all_data = json.load(f)
@@ -90,18 +93,19 @@ def main_run_once():
 
     for channel in CHANNEL_IDS:
         try:
-            # scrapetube fetch
-            videos = list(scrapetube.get_channel(channel, limit=3))
+            # increased limit to ensure we catch videos pushed down the feed
+            videos = list(scrapetube.get_channel(channel, limit=5))
             
             for video in videos:
                 v_id = video['videoId']
+                v_title = video.get('title', {}).get('runs', [{}])[0].get('text', 'No Title')
+                
                 if v_id in seen_ids:
+                    print(f"Skipping: {v_title} (Already in database)")
                     continue
                 
                 transcript = get_video_transcript(v_id)
                 if transcript:
-                    v_title = video.get('title', {}).get('runs', [{}])[0].get('text', 'No Title')
-                    # Get original upload text (e.g., '2 days ago')
                     v_time = video.get('publishedTimeText', {}).get('simpleText', 'Unknown Date')
                     
                     print(f"Processing: {v_title} ({v_time})")
@@ -111,7 +115,6 @@ def main_run_once():
                         contents=[f"{FINANCIAL_PROMPT}\n\nTranscript:\n{transcript}"]
                     )
 
-                    # Add new record with metadata
                     all_data.append({
                         "video_id": v_id,
                         "channel_name": CHANNEL_MAP.get(channel, "Unknown Analyst"),
@@ -122,19 +125,17 @@ def main_run_once():
                     })
                     seen_ids.add(v_id)
                     new_entries_added = True
-                    time.sleep(15) # Wait between requests
+                    time.sleep(10) # reduced sleep for faster actions execution
         except Exception as e:
             print(f"Could not fetch channel {channel}: {e}")
             continue
 
-    # 2. Sort so oldest records are at the bottom
-    # We sort by the 'processed_at' time descending (Newest first)
     if new_entries_added:
         all_data.sort(key=lambda x: x['processed_at'], reverse=True)
         
         with open(DB_FILE, "w") as f:
             json.dump(all_data, f, indent=4)
-        print("Database updated. Your new summaries are at the top, Rayne.")
+        print("Database updated successfully, Rayne.")
     else:
         print("No new videos found today, Rayne.")
 
