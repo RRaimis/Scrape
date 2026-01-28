@@ -4,3 +4,4 @@ youtube-transcript-api
 ipykernel
 PyYAML
 pandas
+nbformat
