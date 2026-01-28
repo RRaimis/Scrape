@@ -1,0 +1,121 @@
+---
+title: "Financial Analyst Intelligence"
+author: "Rayne"
+format: 
+  html:
+    toc: true
+    toc-depth: 2
+    toc-expand: true
+    toc-location: left
+    number-sections: true
+    theme: cosmo
+    page-layout: full
+    include-in-header:
+      text: |
+        <style>
+        /* Force Sidebar TOC to stay visible and have a background */
+        #quarto-margin-sidebar {
+            display: block !important;
+            width: 300px !important;
+            border-right: 1px solid #dee2e6;
+            padding-right: 15px;
+        }
+        
+        /* Hide numbers for Analyst (H1), Sections (H3), and Stocks (H4) */
+        h1 .header-section-number, 
+        h3 .header-section-number, 
+        h4 .header-section-number { 
+            display: none !important; 
+        }
+
+        /* Hide specific numbering in the Sidebar TOC for those levels */
+        .sidebar nav[role=doc-toc] li > a > .toc-section-number,
+        .sidebar nav[role=doc-toc] li > ul > li > ul > li > a > .toc-section-number {
+            display: none !important;
+        }
+
+        /* Keep ## Video Titles numbered and clean */
+        h2 .header-section-number {
+            display: inline-block;
+            margin-right: 0.5em;
+        }
+
+        .video-meta {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 5px solid #007bff;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+        </style>
+---
+
+```{python}
+#| echo: false
+#| output: asis
+
+import json
+import os
+from datetime import datetime
+from IPython.display import display, Markdown
+
+# Database connection [cite: 8, 106]
+DB_FILE = os.path.join("..", "3_outputs", "financial_summaries.json")
+RENDER_TIME = datetime.now()
+
+display(Markdown(f"Dashboard Rendered: **{RENDER_TIME.strftime('%Y-%m-%d %H:%M:%S')}**"))
+display(Markdown("\n\n<br>\n\n"))
+
+def get_analyst_data(target_name):
+    if not os.path.exists(DB_FILE):
+        return []
+    with open(DB_FILE, "r") as f:
+        data = json.load(f)
+    
+    # Filter for analyst and sort by processed_at descending [cite: 120, 131, 139]
+    filtered = [v for v in data if v['channel_name'] == target_name]
+    filtered.sort(key=lambda x: x.get('processed_at', ''), reverse=True)
+    return filtered
+
+def calculate_age(processed_at_str):
+    try:
+        proc_date = datetime.strptime(processed_at_str, '%Y-%m-%d %H:%M:%S')
+        delta = RENDER_TIME - proc_date
+        return delta.days
+    except:
+        return "Unknown"
+
+def render_analyst(name):
+    videos = get_analyst_data(name)
+    display(Markdown(f"# {name}"))
+    
+    if not videos:
+        display(Markdown(f"No data available for {name}, Rayne."))
+        return
+
+    for video in videos:
+        proc_dt = video.get('processed_at', 'Unknown')
+        age = calculate_age(proc_dt)
+        
+        display(Markdown(f"\n---\n"))
+        # H2 heading for TOC indexing [cite: 144, 154, 162]
+        display(Markdown(f"## {video['title']}"))
+        
+        display(Markdown(f"""
+<div class='video-meta'>
+<b>Source Date:</b> {video.get('date_of_interest', 'N/A')} | 
+<b>Processed:</b> {proc_dt} | 
+<b>Age:</b> {age} days ago
+</div>
+"""))
+        
+        display(Markdown(video['analysis']))
+        display(Markdown("\n\n"))
+
+# Sequential rendering to maintain TOC hierarchy
+render_analyst("Benjamin Cowen")
+render_analyst("Tom Hayes")
+render_analyst("Forward Guidance")
+```
+

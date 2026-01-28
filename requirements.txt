@@ -1,0 +1,4 @@
+google-genai
+scrapetube
+youtube-transcript-api
+ipykernel
