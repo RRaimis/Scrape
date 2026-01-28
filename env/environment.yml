@@ -1,0 +1,28 @@
+name: pydata
+channels:
+  - defaults
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+  - https://repo.anaconda.com/pkgs/msys2
+dependencies:
+  - jupyterlab
+  - matplotlib
+  - numpy
+  - pandas
+  - scikit-learn
+  - scipy
+  - seaborn
+  - nbconvert
+  - statsmodels
+  - simpleitk
+  - setuptools
+  - wheel
+  - lightgbm
+  - xgboost
+  - pydicom
+  - ipywidgets
+  - tqdm
+  - notebook
+  - ydata-profiling
+  - tabulate
+prefix: C:\Users\Ocpc\.conda\envs\pydata

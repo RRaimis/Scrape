@@ -1,0 +1,194 @@
+---
+title: "Project name"
+subtitle: "Project subtitle"
+author: "MD Raimondas Juškys"
+date: last-modified
+date-format: "MMMM D, YYYY"
+
+# GLOBAL SETTINGS (Apply to all formats)
+jupyter: python3
+toc: true
+number-sections: true
+highlight-style: github
+
+# EXECUTION OPTIONS
+execute:
+  echo: true          # Show code? (Set to false for final executive reports)
+  warning: false      # Hide warnings
+  message: false      # Hide package loading messages
+  cache: false        # Set to true if calculations take a long time
+  fig-dpi: 300        # image export resolution
+  fig-width: 6        # default figure width (inches)
+  fig-height: 4       # default figure height
+  fig-format: png     # choose png/pdf/svg
+  fig-align: center   # center figures
+  echo-fenced: true   # ensure fenced code is shown nicely
+
+# FORMAT-SPECIFIC SETTINGS (which comes first gets rendered)
+format:
+  # 1. HTML
+  html:
+    theme: cosmo      # Options: cosmo, journal, flatly, sketchy
+    toc-location: left
+    code-fold: true   # Collapses code blocks! Readers click to see code.
+    code-tools: true  # Adds a "Code" menu to show/hide all code
+    embed-resources: true # Creates a single self-contained .html file
+    fig-width: 8
+    fig-height: 6
+    smooth-scroll: true
+    anchor-sections: true
+
+  # 2. PDF
+  pdf:
+    documentclass: scrartcl
+    classoption: [landscape] # Remove this line for standard Portrait orientation
+    papersize: a4
+    geometry:
+      - top=20mm
+      - left=20mm
+      - right=20mm
+      - bottom=20mm
+    colorlinks: true    # Makes TOC and citations clickable blue links
+    fig-pos: "H"        # Forces figures to stay exactly where you put them
+    lof: true           # Generate List of Figures?
+    lot: true           # Generate List of Tables?
+    mainfont: "TeX Gyre Pagella" # Professional font (optional, requires installation)
+    monofont: "Consolas"      # Code font
+    include-in-header:	# This helps to add a gray box behind codechunks
+      text: |
+        \usepackage{xcolor}
+        \usepackage{framed}
+        \definecolor{shadecolor}{RGB}{230,230,230}  % Light grey color
+        \renewenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+
+
+    
+# CROSS-REFERENCING (Critical for scientific reports)
+# Allows you to use @fig-name in text
+crossref:
+  fig-title: Figure
+  tbl-title: Table
+  title-delim: ":"
+  
+---
+
+```{python}
+#| label: setup
+#| echo: false
+#| warning: false
+#| message: false
+
+# --- 1. System & Environment ---
+import os
+import sys
+import warnings
+
+# Filter out messy warnings for a clean report
+warnings.filterwarnings('ignore')
+
+# --- 2. Data Manipulation ---
+import pandas as pd
+import numpy as np
+
+# --- 3. Visualization ---
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Configure plotting style 
+sns.set_theme(style="whitegrid", context="paper", palette="viridis")
+plt.rcParams['figure.figsize'] = (10, 6)
+plt.rcParams['figure.dpi'] = 120  # High resolution for print
+plt.rcParams['savefig.bbox'] = 'tight'
+
+# Configure Pandas display
+pd.set_option('display.max_columns', None)  # Show all radiomic features
+pd.set_option('display.precision', 4)       # Clean decimal formatting
+
+# --- 4. Machine Learning Imports ---
+# Preprocessing
+from sklearn.model_selection import (
+    train_test_split, 
+    StratifiedKFold, 
+    GridSearchCV, 
+    cross_val_score
+)
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, RobustScaler
+from sklearn.feature_selection import SelectKBest, f_classif, RFECV
+
+# model
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.svm import SVC
+from xgboost import XGBClassifier
+
+# evaluate
+from sklearn.metrics import (
+    accuracy_score, 
+    confusion_matrix, 
+    classification_report, 
+    roc_auc_score, 
+    roc_curve,
+    ConfusionMatrixDisplay
+)
+
+# --- 5. random seed ---
+# Use this variable everywhere you need a random_state
+random_seed = 42
+
+print("Setup Complete. Libraries loaded, plotting style configured and random seed set.")
+
+#--------------------
+#--------------------
+#--------------------
+
+#Imports for CNN from Tensorflow
+
+# General Imports
+import tensorflow as tf
+import pandas as pd
+import numpy as np
+import random
+import os
+# Visualization
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Building Model
+from keras.utils import plot_model
+from tensorflow.keras import models
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.layers import MaxPooling2D
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.optimizers import legacy
+# Training Model
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import ReduceLROnPlateau
+from tensorflow.keras.callbacks import ModelCheckpoint
+# Data Processing
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.preprocessing.image import array_to_img
+from tensorflow.keras.preprocessing.image import load_img
+
+# Global variables
+SAVE = False
+SEED = 111
+# Setting seed for consistent results
+tf.keras.utils.set_random_seed(SEED)
+tf.random.set_seed(SEED)
+np.random.seed(SEED)
+```
+
+
+# Template for analysis
+```{python}
+# | label: chunk-name
+# | eval: true # whether to run the codechunk
+# | echo: true  # whether to add codeblock
+# | warning: false
+# | message: false
+# | fig-cap: "Distribution of MGMT methylation status." 
+
+```
