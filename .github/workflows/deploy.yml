@@ -9,7 +9,8 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    # Changed from ubuntu-latest to windows-latest to match your PC
+    runs-on: windows-latest
     permissions:
       contents: write
     steps:
@@ -20,13 +21,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          cache: 'pip' # Speeds up future runs
+          cache: 'pip'
 
       - name: Install Dependencies
         run: |
-          # Install everything in one go to ensure compatibility
-          pip install google-genai scrapetube youtube-transcript-api ipykernel PyYAML pandas nbformat nbclient
-          # Force register the kernel so Quarto can see the libraries
+          pip install google-genai scrapetube youtube-transcript-api ipykernel PyYAML pandas
           python -m ipykernel install --user --name python3
 
       - name: Set up Quarto
@@ -35,6 +34,7 @@ jobs:
       - name: Run Scraper
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        # Windows handles this path the same way in the shell
         run: python 2_notebooks/YTscrape.py 
 
       - name: Render Quarto to HTML
