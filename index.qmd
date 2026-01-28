@@ -61,7 +61,7 @@ from datetime import datetime
 from IPython.display import display, Markdown
 
 # Database connection [cite: 8, 106]
-DB_FILE = os.path.join("..", "3_outputs", "financial_summaries.json")
+DB_FILE = os.path.join("3_outputs", "financial_summaries.json")
 RENDER_TIME = datetime.now()
 
 display(Markdown(f"Dashboard Rendered: **{RENDER_TIME.strftime('%Y-%m-%d %H:%M:%S')}**"))
