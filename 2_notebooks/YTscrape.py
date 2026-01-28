@@ -21,24 +21,30 @@ CHANNEL_MAP = {
 }
 
 # --- DYNAMIC PATHING ---
-# Ensure we find the folder regardless of where the command is run from
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_FOLDER = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "3_outputs"))
 DB_FILE = os.path.join(OUTPUT_FOLDER, "financial_summaries.json")
 
-# [FINANCIAL_PROMPT stays exactly as you have it]
+# [FINANCIAL_PROMPT remains the same]
 FINANCIAL_PROMPT = """[Your Prompt Text Here]"""
 
 client = genai.Client(api_key=API_KEY)
 
 def get_video_transcript(video_id):
     try:
-        # FIX: Call the class method directly, do not use an instance ()
-        srt = YouTubeTranscriptApi.get_transcript(video_id)
+        # Standardize the call for GitHub Actions environment
+        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+        # Fetch the actual text from the first available transcript
+        srt = transcript_list.find_transcript(['en']).fetch()
         return " ".join([snippet['text'] for snippet in srt])
     except Exception as e:
-        print(f"Transcript error for {video_id}: {e}")
-        return None
+        # Fallback for older versions if list_transcripts fails
+        try:
+            srt = YouTubeTranscriptApi.get_transcript(video_id)
+            return " ".join([snippet['text'] for snippet in srt])
+        except:
+            print(f"Transcript error for {video_id}: {e}")
+            return None
 
 def main_run_once():
     print(f"Target Database File: {DB_FILE}")
@@ -59,7 +65,7 @@ def main_run_once():
 
     for channel in CHANNEL_IDS:
         try:
-            # Look back further (limit=5) to catch anything missed
+            # Check 4 videos to ensure overlap
             videos = list(scrapetube.get_channel(channel, limit=4))
             
             for video in videos:
@@ -76,7 +82,7 @@ def main_run_once():
                     print(f"Processing: {v_title} ({v_time})")
                     
                     response = client.models.generate_content(
-                        model="gemini-2.5-flash",
+                        model="gemini-2.5-flash", # Using the stable 2.0 version
                         contents=[f"{FINANCIAL_PROMPT}\n\nTranscript:\n{transcript}"]
                     )
 
