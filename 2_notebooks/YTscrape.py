@@ -91,7 +91,7 @@ def main_run_once():
     for channel in CHANNEL_IDS:
         try:
             # scrapetube fetch
-            videos = list(scrapetube.get_channel(channel, limit=2))
+            videos = list(scrapetube.get_channel(channel, limit=3))
             
             for video in videos:
                 v_id = video['videoId']
