@@ -2,16 +2,16 @@ name: Daily Financial Update
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs every day at midnight
+    - cron: '0 0 * * *'
   push:
-    branches: [ main ] # Runs every time you push code
-  workflow_dispatch: # Allows you to click 'Run' manually
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Essential for the bot to save the new JSON data
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -23,15 +23,16 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install google-genai scrapetube youtube-transcript-api ipykernel
+          # Added PyYAML and pandas to ensure render succeeds
+          pip install google-genai scrapetube youtube-transcript-api ipykernel PyYAML pandas
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
       - name: Run Scraper
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} # This injects your secret!
-        run: python 2_notebooks/YTscrape.py # REPLACE with your actual scraper filename
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python 2_notebooks/script.py 
 
       - name: Render Quarto to HTML
         run: quarto render index.qmd
